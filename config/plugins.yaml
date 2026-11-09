@@ -41,6 +41,10 @@
   loader: python
   location: "{REPO}/providers"
 
+- name: omega_chatgpt
+  loader: python
+  location: "{REPO}/providers"
+
 - name: mockprovider
   loader: python
   location: "{REPO}/providers"

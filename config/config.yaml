@@ -144,6 +144,16 @@ openai_model: "gpt-5.5"
 # Overrides prompt cache key
 #OPENAI_PROMPT_CACHE_KEY:
 
+# ChatGPT subscription
+# Enabled with provider: ChatGPT (local standalone only; no GATEWAY_URL/Docker)
+# Empty selects an available model discovered for the signed-in account.
+# The general model parameter overrides this value.
+chatgpt_model: ""
+# Sign in with scripts/chatgpt-auth login. Set OMEGA_CHATGPT_AUTH_FILE in the
+# environment to choose a credential file; never put tokens in this config.
+# Use embeddingprovider: Local unless separate embedding API keys are supplied.
+# maxOutputToken is not supported by the subscription endpoint.
+
 # ASIOne
 # Enabled with provider: ASIOne
 # Default model
