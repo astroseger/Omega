@@ -162,7 +162,7 @@ python3 repos/Omega/scripts/chatgpt-auth status
 python3 repos/Omega/scripts/chatgpt-auth models
 ```
 
-Use a standalone filesystem policy with your actual local paths; the bundled `profile/policy.yaml` uses Docker paths such as `/PeTTa`. Allow read/write access to the credential directory (default `~/.config/omega`) so token refresh can replace the saved file. Use absolute paths in the policy and pass its location when starting Omega:
+Use a standalone filesystem policy with your actual local paths; the bundled `profile/policy.yaml` uses Docker paths such as `/PeTTa`. Allow read/write access to the credential directory (default `~/.omega_auth`) so token refresh can replace the saved file. Use absolute paths in the policy and pass its location when starting Omega:
 
 ```sh
 OMEGA_AUTH_SECRET="<channel-secret>" sh run.sh run.metta \
@@ -172,7 +172,9 @@ OMEGA_AUTH_SECRET="<channel-secret>" sh run.sh run.metta \
 
 Login opens your browser and asks permission to use your ChatGPT plan. An eligible account and available plan allowance are required. The provider discovers an available model by default; choose a model reported by `models` with `model=<model-id>` or `chatgpt_model=<model-id>`.
 
-Credentials are saved to `~/.config/omega/chatgpt.json`. To choose another file, set `OMEGA_CHATGPT_AUTH_FILE` for both the login command and Omega. The auth command also accepts `--auth-file <path>` **before** its subcommand. Keep credential files private and out of the repository; do not put tokens in `config.yaml`. To remove the saved local login:
+Credentials are saved to `~/.omega_auth/chatgpt.json`. To choose another file, set `OMEGA_CHATGPT_AUTH_FILE` for both the login command and Omega. The auth command also accepts `--auth-file <path>` **before** its subcommand. Keep credential files private and out of the repository; do not put tokens in `config.yaml`.
+
+If you signed in using the previous default, stop Omega and move `~/.config/omega/chatgpt.json` to `~/.omega_auth/chatgpt.json`, or sign in again. Credentials are not migrated automatically. To remove the saved local login:
 
 ```sh
 python3 repos/Omega/scripts/chatgpt-auth logout

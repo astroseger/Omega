@@ -109,7 +109,7 @@ def _request_json(url, *, form=None, bearer=None, empty_ok=False):
 
 def credential_path(auth_file=None):
     return Path(auth_file or os.environ.get("OMEGA_CHATGPT_AUTH_FILE")
-                or "~/.config/omega/chatgpt.json").expanduser()
+                or "~/.omega_auth/chatgpt.json").expanduser()
 
 
 @contextmanager
@@ -424,7 +424,7 @@ def logout(auth_file=None):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Manage Omega's local Sign in with ChatGPT connection.")
-    parser.add_argument("--auth-file", help="Credential file (default: OMEGA_CHATGPT_AUTH_FILE or ~/.config/omega/chatgpt.json)")
+    parser.add_argument("--auth-file", help="Credential file (default: OMEGA_CHATGPT_AUTH_FILE or ~/.omega_auth/chatgpt.json)")
     commands = parser.add_subparsers(dest="command", required=True)
     sign_in = commands.add_parser("login", help="Continue with ChatGPT in your browser")
     sign_in.add_argument("--no-browser", action="store_true", help="Print the sign-in URL instead of opening a browser")
