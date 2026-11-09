@@ -162,6 +162,16 @@ python3 repos/Omega/scripts/chatgpt-auth status
 python3 repos/Omega/scripts/chatgpt-auth models
 ```
 
+To verify that the account can make an inference request through Omega:
+
+```sh
+python3 repos/Omega/scripts/chatgpt-auth check
+# Optional: select a model from the models command and change the deadline.
+python3 repos/Omega/scripts/chatgpt-auth check --model <model-id> --timeout 120
+```
+
+The check makes one inference request and consumes ChatGPT plan allowance. It verifies a test tool call without executing it or starting the agent loop, channels, or memory services. It uses the configured model or the first available account model unless `--model` is supplied. It refreshes credentials when needed and prints `Account OK` only after validating the response. The default 120-second deadline covers startup, authentication, model discovery, and inference; the worker is stopped on timeout. Exit codes are `0` for success, `1` for failure, `2` for invalid arguments, `124` for timeout, and `130` for cancellation. This checks current inference access, not remaining balance. The Python entry point is also available as `python3 repos/Omega/src/check_account.py`.
+
 Use a standalone filesystem policy with your actual local paths; the bundled `profile/policy.yaml` uses Docker paths such as `/PeTTa`. Allow read/write access to the credential directory (default `~/.omega_auth`) so token refresh can replace the saved file. Use absolute paths in the policy and pass its location when starting Omega:
 
 ```sh

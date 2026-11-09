@@ -433,6 +433,9 @@ def main(argv=None):
     commands.add_parser("status", help="Show local connection status without refreshing tokens")
     commands.add_parser("models", help="List models available to the connected ChatGPT account")
     commands.add_parser("logout", help="Revoke the session and clear local credentials")
+    check = commands.add_parser("check", help="Verify account access with one inference request (uses plan allowance)")
+    check.add_argument("--model", help="Account model to check (default: Omega configuration or first available model)")
+    check.add_argument("--timeout", type=int, default=120, help="Overall deadline in seconds (default: 120)")
     args = parser.parse_args(argv)
     try:
         if args.command == "login":
@@ -441,6 +444,9 @@ def main(argv=None):
         elif args.command == "models":
             for model in list_models(args.auth_file):
                 print(f"{model['slug']}\t{model.get('display_name', model['slug'])}")
+        elif args.command == "check":
+            from check_account import check_account
+            return check_account(auth_file=args.auth_file, model=args.model, timeout=args.timeout)
         elif args.command == "logout":
             confirmed = logout(args.auth_file)
             print("Signed out locally." + (" Remote session revoked." if confirmed else
