@@ -140,11 +140,12 @@ scripts/omega start -d "$image" -p OpenAI -t telegram \
 
 ## Usage
 
-Before running the system you need to choose your LLM API provider and export the API key as the environment variable.
+Before running the system, choose your LLM provider. API providers require the environment variable below; `ChatGPT` uses browser sign-in as described below.
 | Provider | Env var name | Notes |
 |---|---|---|
 | `Anthropic` (default) | `ANTHROPIC_API_KEY` | Claude models via the Anthropic API. |
 | `OpenAI` | `OPENAI_API_KEY` | GPT models. Also reused by the OpenAI embedding provider below. |
+| `ChatGPT` | Browser sign-in | Use your eligible ChatGPT subscription for local standalone runs. See below. |
 | `ASICloud` | `ASI_API_KEY` |  MiniMax models via ASI Alliance inference endpoint (`inference.asicloud.cudos.org`). |
 | `ASIOne` | `ASIONE_API_KEY` |  ASI1 Ultra model via ASI:One inference endpoint (`https://api.asi1.ai/v1`). |
 | `OpenAIAPI` | `OPENAIAPI_API_KEY` |  Use OpenAI API with any endpoint and model. API endpoint and model are set via `openaiapi_url` and `model` command line parameters. |
@@ -155,6 +156,48 @@ Run the system via the following command which ensures the system is started fro
 OMEGA_AUTH_SECRET=<channel-secret> sh run.sh run.metta IRC_channel="<irc-channel>"
 ```
 After start go to https://webchat.quakenet.org/ to communicate with the agent. Join `<irc-channel>` and after agent is joined send `auth <channel-secret>` message to authenticate yourself as an agent owner. Please replace `<irc-channel>` and `<channel-secret>` by your own values.
+
+### ChatGPT subscription (local standalone)
+
+The optional `ChatGPT` provider uses [Sign in with ChatGPT for open-source applications](https://developers.openai.com/siwc/token-sharing-open-source/sign-in). Install the Python dependencies above, then sign in from the **PeTTa root**:
+
+```sh
+python3 repos/Omega/scripts/chatgpt-auth login
+python3 repos/Omega/scripts/chatgpt-auth status
+python3 repos/Omega/scripts/chatgpt-auth models
+```
+
+To verify that the account can make an inference request through Omega:
+
+```sh
+python3 repos/Omega/scripts/chatgpt-auth check
+# Optional: select a model from the models command and change the deadline.
+python3 repos/Omega/scripts/chatgpt-auth check --model <model-id> --timeout 120
+```
+
+The check makes one inference request and consumes ChatGPT plan allowance. It verifies a test tool call without executing it or starting the agent loop, channels, or memory services. It uses the configured model or the first available account model unless `--model` is supplied. It refreshes credentials when needed and prints `Account OK` only after validating the response. The default 120-second deadline covers startup, authentication, model discovery, and inference; the worker is stopped on timeout. Exit codes are `0` for success, `1` for failure, `2` for invalid arguments, `124` for timeout, and `130` for cancellation. This checks current inference access, not remaining balance. The Python entry point is also available as `python3 repos/Omega/src/check_account.py`.
+
+Use a standalone filesystem policy with your actual local paths; the bundled `profile/policy.yaml` uses Docker paths such as `/PeTTa`. Allow read/write access to the credential directory (default `~/.omega_auth`) so token refresh can replace the saved file. Use absolute paths in the policy and pass its location when starting Omega:
+
+```sh
+OMEGA_AUTH_SECRET="<channel-secret>" sh run.sh run.metta \
+  provider=ChatGPT embeddingprovider=Local IRC_channel="<irc-channel>" \
+  securityPolicyPath="/absolute/path/to/local-policy.yaml"
+```
+
+Login opens your browser and asks permission to use your ChatGPT plan. An eligible account and available plan allowance are required. The provider discovers an available model by default; choose a model reported by `models` with `model=<model-id>` or `chatgpt_model=<model-id>`.
+
+Credentials are saved to `~/.omega_auth/chatgpt.json`. To choose another file, set `OMEGA_CHATGPT_AUTH_FILE` for both the login command and Omega. The auth command also accepts `--auth-file <path>` **before** its subcommand. Keep credential files private and out of the repository; do not put tokens in `config.yaml`.
+
+If you signed in using the previous default, stop Omega and move `~/.config/omega/chatgpt.json` to `~/.omega_auth/chatgpt.json`, or sign in again. Credentials are not migrated automatically. To remove the saved local login:
+
+```sh
+python3 repos/Omega/scripts/chatgpt-auth logout
+```
+
+Subscription requests consume your shared ChatGPT plan limits, including Omega's follow-up turns and scheduled wake-ups. The subscription endpoint does not support `maxOutputToken`; this provider omits that request setting. Use `embeddingprovider=Local` to avoid a separate embedding API key. OpenAI embeddings still require their own API credentials.
+
+This initial integration supports standalone runs only. The Docker launcher and `GATEWAY_URL` credential proxy are not supported; use the standalone command above or the existing `OpenAI` API-key provider for Docker.
 
 ### Import Knowledge
 
